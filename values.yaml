@@ -1,0 +1,58 @@
+replicaCount: 2
+
+
+image:
+  frontend: gcr.io/forward-fuze-434618-m2/asm_front/frontend-image:local1
+  backend: gcr.io/forward-fuze-434618-m2/asm_back:latest
+
+service:
+  frontend:
+    servicePort: 5000
+    containerPort: 5000
+  backend:
+    port: 80
+    servicePort: 3000
+    targetPort: 3000
+    containerPort: 3000
+
+dbSecret:
+  name: db-secret
+  database: cG9zdGdyZXM=
+  hostname: MzQuNDYuMTQ2LjE4Mw==
+  password: cG9zdDEyMw==
+  username: cG9zdGdyZXM=
+
+ingress:
+  host: thebem.online
+  clusterIssuer: letsencrypt-prod
+  tlsSecret: awesome-cats-tls
+  backend:
+    targetPort: 3000
+  frontend:
+    containerPort: 5000
+
+certManager:
+  jobName: install-cert-manager-crds
+  jobImage: bitnami/kubectl:latest
+  crdsUrl: https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.crds.yaml
+  restartPolicy: OnFailure
+  backoffLimit: 4
+
+  certificate:
+    name: awesome-cats-cert
+    namespace: default
+    secretName: awesome-cats-tls
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+    commonName: thebem.online
+    dnsNames:
+      - thebem.online
+
+  clusterIssuer:
+    name: letsencrypt-prod
+    email: bermettursunbaeva@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef: letsencrypt-prod
+
+  ingressClass: nginx
